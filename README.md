@@ -1,170 +1,156 @@
-# Fhenix CoFHE Hardhat Starter
+# VeilFlow: Fhenix Confidential DeFi Demo
 
-This project is a starter repository for developing FHE (Fully Homomorphic Encryption) smart contracts on the Fhenix network using CoFHE (Confidential Computing Framework for Homomorphic Encryption).
+This repository started from the official `cofhe-hardhat-starter` and now contains a larger Fhenix showcase:
+
+- confidential private voting
+- a ve-style gauge controller inspired by Curve and Aerodrome
+- wrapped encrypted VEIL balances adapted from the FHERC20 patterns in `marronjo/fhe-hook-template`
+- a shielded LP-backed stablecoin controller with 160% minimum collateralization
+- a Next.js interface for demo mode now and live Fhenix mode later
+
+## What is included
+
+### `PrivateVoting`
+
+A minimal CoFHE voting primitive that keeps tallies hidden until reveal.
+
+### `ConfidentialGaugeController`
+
+A ve-tokenomics module where:
+
+- users lock `VEIL`
+- voting power decays linearly with time
+- every vote is submitted as encrypted `InEuint8`
+- all gauge tallies are updated each vote with `FHE.select(...)`
+- epoch weights stay hidden until `revealEpoch`
+
+### `VeilToken`
+
+A hybrid vote token with:
+
+- standard ERC20 balances for locking and public liquidity flows
+- encrypted balances for shielded treasury or user balances
+- `wrap(...)` and encrypted transfer paths modeled after Fhenix FHERC20 patterns
+
+### `ConfidentialStableController` + `VeilStablecoin`
+
+A stablecoin rail where:
+
+- only approved LP pairs can be used as collateral
+- collateral values are tracked with configurable prices
+- users submit encrypted desired mint amounts
+- the controller clips the encrypted request to the safe headroom
+- vhUSD debt and vhUSD balances remain encrypted until the holder decrypts them with a permit
+
+### `frontend/`
+
+A Next.js app called `VeilFlow` that includes:
+
+- wallet + permit rail
+- ve lock planner
+- confidential gauge voting console
+- encrypted vhUSD mint panel
+- demo mode by default
+- live-ready mode via env vars for RPC, CoFHE endpoints, and deployed contract addresses
+
+## Tech sources used
+
+- `marronjo/fhe-hook-template`
+- `FhenixProtocol/poc-shielded-stablecoin`
+- `FhenixProtocol/encrypted-secret-santa`
+
+The contracts and frontend patterns were adapted to the current toolchain version that actually works in this starter environment.
 
 ## Prerequisites
 
-- Node.js (v18 or later)
-- pnpm (recommended package manager)
+- Node.js 20+
+- `corepack` or `pnpm`
 
-## Installation
+## Setup
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/fhenixprotocol/cofhe-hardhat-starter.git
-cd cofhe-hardhat-starter
-```
-
-2. Install dependencies:
+### Contracts
 
 ```bash
-pnpm install
+corepack pnpm install
 ```
 
-## Available Scripts
+### Frontend
 
-### Development
-
-- `pnpm compile` - Compile the smart contracts
-- `pnpm clean` - Clean the project artifacts
-- `pnpm test` - Run tests on the local CoFHE network
-- `pnpm test:hardhat` - Run tests on the Hardhat network
-- `pnpm test:localcofhe` - Run tests on the local CoFHE network
-
-### Local CoFHE Network
-
-- `pnpm localcofhe:start` - Start a local CoFHE network
-- `pnpm localcofhe:stop` - Stop the local CoFHE network
-- `pnpm localcofhe:faucet` - Get test tokens from the faucet
-- `pnpm localcofhe:deploy` - Deploy contracts to the local CoFHE network
-
-### Contract Tasks
-
-- `pnpm task:deploy` - Deploy contracts
-- `pnpm task:addCount` - Add to the counter
-- `pnpm task:getCount` - Get the current count
-- `pnpm task:getFunds` - Get funds from the contract
-
-## Project Structure
-
-- `contracts/` - Smart contract source files
-  - `Counter.sol` - Example FHE counter contract
-  - `Lock.sol` - Example time-locked contract
-- `test/` - Test files
-- `ignition/` - Hardhat Ignition deployment modules
-
-## `cofhejs` and `cofhe-hardhat-plugin`
-
-This project uses cofhejs and the CoFHE Hardhat plugin to interact with FHE (Fully Homomorphic Encryption) smart contracts. Here are the key features and utilities:
-
-### cofhejs Features
-
-- **Encryption/Decryption**: Encrypt and decrypt values using FHE
-
-  ```typescript
-  import { cofhejs, Encryptable, FheTypes } from 'cofhejs/node'
-
-  // Encrypt a value
-  const [encryptedInput] = await cofhejs.encrypt(
-  	(step) => {
-  		console.log(`Encrypt step - ${step}`)
-  	},
-  	[Encryptable.uint32(5n)]
-  )
-
-  // Decrypt a value
-  const decryptedResult = await cofhejs.decrypt(encryptedValue, FheTypes.Uint32)
-  ```
-
-- **Unsealing**: Unseal encrypted values from the blockchain
-  ```typescript
-  const unsealedResult = await cofhejs.unseal(encryptedValue, FheTypes.Uint32)
-  ```
-
-### `cofhe-hardhat-plugin` Features
-
-- **Network Configuration**: Automatically configures the cofhe enabled networks
-- **Wallet Funding**: Automatically funds wallets on the local network
-
-  ```typescript
-  import { localcofheFundWalletIfNeeded } from 'cofhe-hardhat-plugin'
-  await localcofheFundWalletIfNeeded(hre, walletAddress)
-  ```
-
-- **Signer Initialization**: Initialize cofhejs with a Hardhat signer
-
-  ```typescript
-  import { cofhejs_initializeWithHardhatSigner } from 'cofhe-hardhat-plugin'
-  await cofhejs_initializeWithHardhatSigner(signer)
-  ```
-
-- **Testing Utilities**: Helper functions for testing FHE contracts
-  ```typescript
-  import { expectResultSuccess, expectResultValue, mock_expectPlaintext, isPermittedCofheEnvironment } from 'cofhe-hardhat-plugin'
-  ```
-
-### Environment Configuration
-
-The plugin supports different environments:
-
-- `MOCK`: For testing with mocked FHE operations
-- `LOCAL`: For testing with a local CoFHE network (whitelist only)
-- `TESTNET`: For testing and tasks using `arb-sepolia` and `eth-sepolia`
-
-You can check the current environment using:
-
-```typescript
-if (!isPermittedCofheEnvironment(hre, 'MOCK')) {
-	// Skip test or handle accordingly
-}
+```bash
+cd frontend
+corepack pnpm install
 ```
 
-## Links and Additional Resources
+## Contract demos
 
-### `cofhejs`
+### Private voting
 
-[`cofhejs`](https://github.com/FhenixProtocol/cofhejs) is the JavaScript/TypeScript library for interacting with FHE smart contracts. It provides functions for encryption, decryption, and unsealing FHE values.
+```bash
+corepack pnpm demo:voting
+corepack pnpm test:voting
+```
 
-#### Key Features
+### Confidential gauges
 
-- Encryption of data before sending to FHE contracts
-- Unsealing encrypted values from contracts
-- Managing permits for secure contract interactions
-- Integration with Web3 libraries (ethers.js and viem)
+```bash
+corepack pnpm demo:gauges
+corepack pnpm test:gauges
+```
 
-### `cofhe-mock-contracts`
+### Shielded stablecoin
 
-[`cofhe-mock-contracts`](https://github.com/FhenixProtocol/cofhe-mock-contracts) provides mock implementations of CoFHE contracts for testing FHE functionality without the actual coprocessor.
+```bash
+corepack pnpm test:stable
+```
 
-#### Features
+### Full suite
 
-- Mock implementations of core CoFHE contracts:
-  - MockTaskManager
-  - MockQueryDecrypter
-  - MockZkVerifier
-  - ACL (Access Control List)
-- Synchronous operation simulation with mock delays
-- On-chain access to unencrypted values for testing
+```bash
+corepack pnpm test
+```
 
-#### Integration with Hardhat and cofhejs
+## Frontend usage
 
-Both `cofhejs` and `cofhe-hardhat-plugin` interact directly with the mock contracts:
+### Demo mode
 
-- When imported in `hardhat.config.ts`, `cofhe-hardhat-plugin` injects necessary mock contracts into the Hardhat testnet
-- `cofhejs` automatically detects mock contracts and adjusts behavior for test environments
+The interface ships in demo mode by default and can be deployed immediately without live contracts:
 
-#### Mock Behavior Differences
+```bash
+cd frontend
+corepack pnpm dev
+```
 
-- **Symbolic Execution**: In mocks, ciphertext hashes point to plaintext values stored on-chain
-- **On-chain Decryption**: Mock decryption adds simulated delays to mimic real behavior
-- **ZK Verification**: Mock verifier handles on-chain storage of encrypted inputs
-- **Off-chain Decryption**: When using `cofhejs.unseal()`, mocks return plaintext values directly from on-chain storage
+### Live mode
 
-## License
+Copy `frontend/.env.example` into your local env file and provide:
 
-MIT
+- RPC URL
+- CoFHE endpoint URLs
+- deployed contract addresses
+- approved collateral token addresses
 
-## Contributing
+Then switch:
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+```bash
+NEXT_PUBLIC_APP_MODE=live
+```
+
+## Important files
+
+- `contracts/PrivateVoting.sol`
+- `contracts/ConfidentialGaugeController.sol`
+- `contracts/VeilToken.sol`
+- `contracts/VeilStablecoin.sol`
+- `contracts/ConfidentialStableController.sol`
+- `scripts/privateVotingDemo.ts`
+- `scripts/confidentialVeGaugeDemo.ts`
+- `test/ConfidentialGaugeController.test.ts`
+- `test/ConfidentialStableController.test.ts`
+- `frontend/app/page.tsx`
+- `frontend/hooks/useCofhe.ts`
+
+## Current status
+
+- Hardhat suite is green locally
+- `frontend` production build is green locally
+- the frontend is deployable now in demo mode and becomes interactive in live mode once envs are provided

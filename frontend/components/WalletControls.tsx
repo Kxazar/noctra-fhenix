@@ -23,8 +23,9 @@ export function WalletControls() {
   const connector = useMemo(() => connectors[0], [connectors])
   const wrongNetwork = isConnected && chainId !== appChain.id
   const canCreatePermit = isConnected && !wrongNetwork && phase !== 'initializing'
-  const phaseLabel =
-    phase === 'ready'
+  const phaseLabel = wrongNetwork
+    ? `wrong network`
+    : phase === 'ready'
       ? permitHash
         ? 'permit ready'
         : 'wallet ready'
@@ -32,7 +33,7 @@ export function WalletControls() {
         ? 'cofhe booting'
         : phase === 'error'
           ? 'cofhe error'
-          : 'wallet idle'
+          : null
 
   const handleConnect = async () => {
     if (!connector) {
@@ -78,7 +79,9 @@ export function WalletControls() {
         <strong>{address ? shortenAddress(address) : 'not connected'}</strong>
       </div>
 
-      <div className={`status-pill ${phase === 'ready' ? 'status-live' : 'status-demo'}`}>{phaseLabel}</div>
+      {phaseLabel ? (
+        <div className={`status-pill ${phase === 'ready' && !wrongNetwork ? 'status-live' : 'status-demo'}`}>{phaseLabel}</div>
+      ) : null}
 
       {!isConnected ? (
         <button className="button button-compact" disabled={isConnecting} onClick={() => void handleConnect()} type="button">

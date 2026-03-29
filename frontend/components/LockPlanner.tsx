@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, useWriteContract } from 'wagmi'
 
 import { brand } from '@/lib/brand'
 import { contracts, isLiveConfigured, gaugeControllerAbi, veilTokenAbi } from '@/lib/contracts'
+import { appChain } from '@/lib/wagmiConfig'
 
 const MAX_LOCK_DAYS = 4 * 365
 
@@ -14,6 +15,7 @@ function describeError(error: { shortMessage?: string; message?: string } | null
 
 export function LockPlanner() {
   const { address } = useAccount()
+  const chainId = useChainId()
   const { writeContractAsync, isPending } = useWriteContract()
 
   const [lockAmount, setLockAmount] = useState(1000)
@@ -30,8 +32,14 @@ export function LockPlanner() {
     () => ((durationDays / MAX_LOCK_DAYS) * 100).toFixed(1),
     [durationDays],
   )
+  const wrongNetwork = Boolean(address) && chainId !== appChain.id
 
   const handleLock = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before locking ${brand.governanceTokenSymbol}.`)
+      return
+    }
+
     if (!address || !isLiveConfigured) {
       setStatus('Live mode is not configured yet, so this panel stays in planner mode.')
       return
@@ -62,6 +70,11 @@ export function LockPlanner() {
   }
 
   const handleWrap = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before wrapping ${brand.governanceTokenSymbol}.`)
+      return
+    }
+
     if (!address || !isLiveConfigured) {
       setStatus(`Wrap is available once a live ${brand.governanceTokenSymbol} token address is configured.`)
       return
@@ -149,10 +162,10 @@ export function LockPlanner() {
       </div>
 
       <div className="button-row">
-        <button className="button" disabled={isPending} onClick={() => void handleLock()}>
+        <button className="button" disabled={wrongNetwork || isPending} onClick={() => void handleLock()}>
           {isPending ? 'Pending...' : 'Approve and lock'}
         </button>
-        <button className="button button-secondary" disabled={isPending} onClick={() => void handleWrap()}>
+        <button className="button button-secondary" disabled={wrongNetwork || isPending} onClick={() => void handleWrap()}>
           Encrypt {brand.governanceTokenSymbol} balance
         </button>
       </div>

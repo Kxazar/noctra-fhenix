@@ -1,12 +1,13 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useAccount, usePublicClient, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi'
 
 import { useCofhe } from '@/hooks/useCofhe'
 import { brand } from '@/lib/brand'
 import { demoEpoch, demoGauges } from '@/lib/demo-data'
 import { contracts, gaugeControllerAbi, isLiveConfigured } from '@/lib/contracts'
+import { appChain } from '@/lib/wagmiConfig'
 
 function describeError(error: { shortMessage?: string; message?: string } | null | undefined) {
   return error?.shortMessage ?? error?.message ?? 'Encrypted vote flow failed'
@@ -15,6 +16,7 @@ function describeError(error: { shortMessage?: string; message?: string } | null
 export function GaugeBoard() {
   const publicClient = usePublicClient()
   const { address } = useAccount()
+  const chainId = useChainId()
   const { writeContractAsync, isPending } = useWriteContract()
   const { decryptHandle, encryptVote, sdkModule } = useCofhe()
 
@@ -27,8 +29,14 @@ export function GaugeBoard() {
     () => demoGauges.find((gauge) => gauge.id === selectedGauge) ?? demoGauges[0],
     [selectedGauge],
   )
+  const wrongNetwork = Boolean(address) && chainId !== appChain.id
 
   const handlePreviewVote = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before preparing a live vote.`)
+      return
+    }
+
     setStatus('Encrypting gauge vote locally...')
     const result = await encryptVote(selectedGauge)
 
@@ -41,6 +49,11 @@ export function GaugeBoard() {
   }
 
   const handleSubmitVote = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before sending a gauge vote.`)
+      return
+    }
+
     if (!publicClient || !address || !isLiveConfigured) {
       setStatus('Live voting is disabled on this deployment. Preview mode still works.')
       return
@@ -83,6 +96,11 @@ export function GaugeBoard() {
   }
 
   const handleDecryptWeight = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before requesting a reveal.`)
+      return
+    }
+
     if (!publicClient || !address || !isLiveConfigured) {
       setRevealedWeight(String(selectedGaugeData.revealedWeight))
       setStatus('Showing demo reveal because live contract addresses are not injected here.')
@@ -156,13 +174,13 @@ export function GaugeBoard() {
       </div>
 
       <div className="button-row">
-        <button className="button button-secondary" onClick={() => void handlePreviewVote()}>
+        <button className="button button-secondary" disabled={wrongNetwork} onClick={() => void handlePreviewVote()}>
           Encrypt vote only
         </button>
-        <button className="button" disabled={isPending} onClick={() => void handleSubmitVote()}>
+        <button className="button" disabled={wrongNetwork || isPending} onClick={() => void handleSubmitVote()}>
           {isPending ? 'Pending...' : 'Submit live vote'}
         </button>
-        <button className="button button-secondary" onClick={() => void handleDecryptWeight()}>
+        <button className="button button-secondary" disabled={wrongNetwork} onClick={() => void handleDecryptWeight()}>
           Reveal selected weight
         </button>
       </div>

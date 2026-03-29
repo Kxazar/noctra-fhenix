@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, useWriteContract } from 'wagmi'
 
 import { brand } from '@/lib/brand'
 import { areAssetsConfigured, arePoolsConfigured, erc20Abi, liquidityPools, marketAssets, poolAbi } from '@/lib/contracts'
+import { appChain } from '@/lib/wagmiConfig'
 import { demoAssets, demoPools } from '@/lib/demo-data'
 
 function describeError(error: { shortMessage?: string; message?: string } | null | undefined) {
@@ -13,6 +14,7 @@ function describeError(error: { shortMessage?: string; message?: string } | null
 
 export function LiquidityPanel() {
   const { address } = useAccount()
+  const chainId = useChainId()
   const { writeContractAsync, isPending } = useWriteContract()
 
   const [selectedPoolId, setSelectedPoolId] = useState(0)
@@ -27,8 +29,14 @@ export function LiquidityPanel() {
   const livePool = liquidityPools.find((pool) => pool.id === selectedPoolId)
   const liveToken0 = marketAssets.find((asset) => asset.id === selectedPool.tokenIn)
   const liveToken1 = marketAssets.find((asset) => asset.id === selectedPool.tokenOut)
+  const wrongNetwork = Boolean(address) && chainId !== appChain.id
 
   const handleAddLiquidity = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before adding liquidity.`)
+      return
+    }
+
     if (!address || !livePool || !liveToken0 || !liveToken1 || !arePoolsConfigured || !areAssetsConfigured) {
       setStatus('Pool addresses are not live yet, so the LP tab stays in preview mode.')
       return
@@ -117,7 +125,7 @@ export function LiquidityPanel() {
       </div>
 
       <div className="button-row">
-        <button className="button" disabled={isPending} onClick={() => void handleAddLiquidity()}>
+        <button className="button" disabled={wrongNetwork || isPending} onClick={() => void handleAddLiquidity()}>
           {isPending ? 'Pending...' : 'Add liquidity'}
         </button>
       </div>

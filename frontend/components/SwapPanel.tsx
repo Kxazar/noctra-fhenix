@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useAccount, usePublicClient, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi'
 
 import { brand } from '@/lib/brand'
 import { areAssetsConfigured, arePoolsConfigured, erc20Abi, liquidityPools, marketAssets, poolAbi } from '@/lib/contracts'
+import { appChain } from '@/lib/wagmiConfig'
 import { demoAssets, demoPools } from '@/lib/demo-data'
 
 function describeError(error: { shortMessage?: string; message?: string } | null | undefined) {
@@ -13,6 +14,7 @@ function describeError(error: { shortMessage?: string; message?: string } | null
 
 export function SwapPanel() {
   const { address } = useAccount()
+  const chainId = useChainId()
   const publicClient = usePublicClient()
   const { writeContractAsync, isPending } = useWriteContract()
 
@@ -27,8 +29,14 @@ export function SwapPanel() {
 
   const livePool = liquidityPools.find((pool) => pool.id === selectedPoolId)
   const liveTokenIn = marketAssets.find((asset) => asset.id === selectedPool.tokenIn)
+  const wrongNetwork = Boolean(address) && chainId !== appChain.id
 
   const handleQuote = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before loading a live quote.`)
+      return
+    }
+
     if (!publicClient || !livePool || !liveTokenIn || !arePoolsConfigured) {
       setQuotedAmountOut(String(Math.max(1, swapAmount - 1)))
       setStatus('Showing a demo quote. Live routing activates once pool addresses are configured.')
@@ -50,6 +58,11 @@ export function SwapPanel() {
   }
 
   const handleSwap = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before sending a swap.`)
+      return
+    }
+
     if (!address || !livePool || !liveTokenIn || !arePoolsConfigured || !areAssetsConfigured) {
       setStatus('Swap routing is ready in the UI, but live pool addresses are not configured yet.')
       return
@@ -120,10 +133,10 @@ export function SwapPanel() {
       </div>
 
       <div className="button-row">
-        <button className="button button-secondary" onClick={() => void handleQuote()}>
+        <button className="button button-secondary" disabled={wrongNetwork} onClick={() => void handleQuote()}>
           Quote swap
         </button>
-        <button className="button" disabled={isPending} onClick={() => void handleSwap()}>
+        <button className="button" disabled={wrongNetwork || isPending} onClick={() => void handleSwap()}>
           {isPending ? 'Pending...' : 'Swap assets'}
         </button>
       </div>

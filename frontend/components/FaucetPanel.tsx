@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, useWriteContract } from 'wagmi'
 
 import { brand } from '@/lib/brand'
 import { contracts, faucetAbi, isFaucetConfigured } from '@/lib/contracts'
+import { appChain } from '@/lib/wagmiConfig'
 
 function describeError(error: { shortMessage?: string; message?: string } | null | undefined) {
   return error?.shortMessage ?? error?.message ?? 'Faucet transaction failed'
@@ -12,9 +13,11 @@ function describeError(error: { shortMessage?: string; message?: string } | null
 
 export function FaucetPanel() {
   const { address } = useAccount()
+  const chainId = useChainId()
   const { writeContractAsync, isPending } = useWriteContract()
   const [status, setStatus] = useState<string | null>(null)
   const faucetAmount = 100
+  const wrongNetwork = Boolean(address) && chainId !== appChain.id
 
   useEffect(() => {
     if (!status && !isFaucetConfigured) {
@@ -23,6 +26,11 @@ export function FaucetPanel() {
   }, [status])
 
   const handleClaim = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before using the faucet.`)
+      return
+    }
+
     if (!isFaucetConfigured) {
       setStatus(`The ${brand.governanceTokenSymbol} faucet enters live mode once its deployed contract address is configured.`)
       return
@@ -63,12 +71,12 @@ export function FaucetPanel() {
         </div>
         <div>
           <span className="muted">Wallet status</span>
-          <strong>{address ? 'ready to claim' : 'connect wallet first'}</strong>
+          <strong>{!address ? 'connect wallet first' : wrongNetwork ? `switch to ${appChain.name}` : 'ready to claim'}</strong>
         </div>
       </div>
 
       <div className="button-row">
-        <button className="button" disabled={!address || isPending} onClick={() => void handleClaim()}>
+        <button className="button" disabled={!address || wrongNetwork || isPending} onClick={() => void handleClaim()}>
           {isPending ? 'Pending...' : `Claim ${brand.governanceTokenSymbol}`}
         </button>
       </div>

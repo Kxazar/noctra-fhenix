@@ -98,7 +98,7 @@ export function LockPlanner() {
           <input
             className="input"
             max={5000}
-            min={100}
+            min={10}
             onChange={(event) => setLockAmount(Number(event.target.value))}
             type="range"
             value={lockAmount}

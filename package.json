@@ -1,5 +1,5 @@
 {
-	"name": "noctra-fhenix-demo",
+	"name": "noctra-fhenix",
 	"version": "0.3.1",
 	"description": "Noctra: a Fhenix CoFHE DeFi demo with ve-tokenomics, shadow gauges, swaps, LP, and encrypted voting",
 	"scripts": {
@@ -53,14 +53,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Kxazar/veilflow-fhenix-demo.git"
+		"url": "git+https://github.com/Kxazar/noctra-fhenix.git"
 	},
 	"author": "Kxazar",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/Kxazar/veilflow-fhenix-demo/issues"
+		"url": "https://github.com/Kxazar/noctra-fhenix/issues"
 	},
-	"homepage": "https://github.com/Kxazar/veilflow-fhenix-demo#readme",
+	"homepage": "https://github.com/Kxazar/noctra-fhenix#readme",
 	"devDependencies": {
 		"@fhenixprotocol/cofhe-contracts": "^0.0.13",
 		"@fhenixprotocol/cofhe-mock-contracts": "^0.3.1",

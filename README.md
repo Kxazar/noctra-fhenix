@@ -10,11 +10,11 @@ Noctra is a Fhenix-native DeFi demo that combines:
 
 Live site:
 
-- [veilflow-fhenix-demo.vercel.app](https://veilflow-fhenix-demo.vercel.app)
+- [noctra-fhenix.vercel.app](https://noctra-fhenix.vercel.app)
 
 Repository:
 
-- [Kxazar/veilflow-fhenix-demo](https://github.com/Kxazar/veilflow-fhenix-demo)
+- [Kxazar/noctra-fhenix](https://github.com/Kxazar/noctra-fhenix)
 
 As of March 29, 2026, the public deployment is live on `Ethereum Sepolia` and the core user flow has been verified on-chain from a real wallet:
 

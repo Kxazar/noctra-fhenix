@@ -1,7 +1,8 @@
 {
-  "name": "veilflow-frontend",
+  "name": "noctra-frontend",
   "private": true,
   "version": "0.1.0",
+  "description": "Noctra frontend for the Fhenix CoFHE DeFi demo",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

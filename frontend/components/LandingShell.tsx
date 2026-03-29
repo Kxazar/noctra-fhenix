@@ -86,15 +86,10 @@ export function LandingShell() {
                   hidden intent and visible market action.
                 </p>
 
-                <div className="hero-actions">
-                  <a className="hero-action" href="#protocol-workspace">
-                    Enter control surface
-                  </a>
-                  <p className="hero-note">
-                    {brand.governanceTokenSymbol} governs emissions, {brand.veGovernanceTokenSymbol} decays over time,
-                    and gauge intent stays hidden until epoch reveal.
-                  </p>
-                </div>
+                <p className="hero-note">
+                  {brand.governanceTokenSymbol} governs emissions, {brand.veGovernanceTokenSymbol} decays over time,
+                  and gauge intent stays hidden until epoch reveal.
+                </p>
 
                 <div className="hero-tags">
                   {heroTags.map((tag) => (

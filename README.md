@@ -1,4 +1,4 @@
-# Noctra Arc: Fhenix Confidential DeFi Demo
+# Noctra: Fhenix Confidential DeFi Demo
 
 This repository started from the official `cofhe-hardhat-starter` and now contains a larger Fhenix showcase focused on a tighter surface:
 
@@ -53,7 +53,7 @@ A minimal CPMM rail where:
 
 ### `frontend/`
 
-A Next.js app called `Noctra Arc` that includes:
+A Next.js app called `Noctra` that includes:
 
 - a top-level `Protocol / About` switch between execution rails and architecture notes
 - a compact architecture overview inside the `About` tab
@@ -123,12 +123,24 @@ WALLET_PRIVATE_KEY=... corepack pnpm demo:wallet-check
 
 ### Full-stack deployment
 
-Deploy the full Noctra Arc stack and print frontend env vars:
+Deploy the full Noctra stack and print frontend env vars:
 
 ```bash
 corepack pnpm deploy:veilflow
 corepack pnpm eth-sepolia:deploy-veilflow
 corepack pnpm arb-sepolia:deploy-veilflow
+```
+
+The current live Sepolia deployment manifest is stored in:
+
+```bash
+deployments/noctra-eth-sepolia.json
+```
+
+You can replay a live wallet verification run against that manifest with:
+
+```bash
+PRIVATE_KEY=... node_modules/.bin/hardhat run scripts/verifySepoliaLiveFlow.ts --network eth-sepolia
 ```
 
 ### Full suite

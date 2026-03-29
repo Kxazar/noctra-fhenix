@@ -17,7 +17,7 @@ contract VeilToken is ERC20, Ownable, IFHERC20 {
 
     euint128 private immutable ZERO = FHE.asEuint128(0);
 
-    constructor() ERC20("Noctra Arc Token", "NTRA") Ownable(msg.sender) {
+    constructor() ERC20("Noctra Token", "NTRA") Ownable(msg.sender) {
         FHE.allowThis(ZERO);
     }
 

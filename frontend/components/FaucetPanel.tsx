@@ -52,20 +52,6 @@ export function FaucetPanel() {
         </div>
       </div>
 
-      <div className="gauge-list">
-        <article className="gauge-card gauge-card-active">
-          <div>
-            <strong>{brand.governanceTokenSymbol}</strong>
-            <p>{faucetAmount} tokens per claim</p>
-            <span>one request every 24 hours, enforced by the contract</span>
-          </div>
-          <div className="gauge-metrics">
-            <span>governance inventory</span>
-            <span>bootstrap lane</span>
-          </div>
-        </article>
-      </div>
-
       <div className="metric-band">
         <div>
           <span className="muted">Asset</span>

@@ -398,18 +398,10 @@ textarea {
   gap: 24px;
 }
 
-.workspace-switcher {
-  display: grid;
-  gap: 16px;
+.top-surface-nav {
+  margin-bottom: 18px;
+  padding: 14px 18px;
   scroll-margin-top: 110px;
-}
-
-.workspace-nav {
-  padding-bottom: 18px;
-}
-
-.workspace-nav-header {
-  align-items: end;
 }
 
 .workspace-tab-row {
@@ -889,7 +881,6 @@ textarea {
   .hero-actions,
   .panel-header,
   .brand-bar,
-  .workspace-nav-header,
   .architecture-track-head {
     align-items: flex-start;
   }

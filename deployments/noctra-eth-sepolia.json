@@ -1,0 +1,107 @@
+{
+  "network": "eth-sepolia",
+  "chainId": 11155111,
+  "deployer": "0x309deFCAAa3FB866C0bF099cB553ebc9f0b38575",
+  "weeklyEmission": "12500",
+  "emissionInventory": "100000",
+  "contracts": {
+    "voteToken": "0x4709e09bEADDA02461cDAa4A9Dd8274F410B2e4d",
+    "voteFaucet": "0x4C8BaF36691894a1997D77Dfa021d63129448BC0",
+    "gaugeController": "0x7B67fBbB1549f3b2CcEa0bE8E44c8cDEEEa689c3",
+    "stableToken": "0xE99fEbcf7481AB0846140919B0a200531BF9f47A",
+    "stableController": "0xC636Ff4683208B46a4B0e550FbE136Ea94078CaD"
+  },
+  "assets": [
+    {
+      "id": "fhETH",
+      "name": "Fhenix ETH",
+      "symbol": "fhETH",
+      "token": "0x6170D934cB23bC59E9781AE50abaca937f45dD72",
+      "faucet": "0x3Ec603a54b2E6cdBDe215609294d1ba124c54fC7"
+    },
+    {
+      "id": "fhUSDC",
+      "name": "Fhenix USDC",
+      "symbol": "fhUSDC",
+      "token": "0xe4213f5A974fd546d6e20F971B0a44eC01Af44f2",
+      "faucet": "0xC943293A79769EAA75EE25E559E4D737d01fc94F"
+    },
+    {
+      "id": "wBTC",
+      "name": "Wrapped Bitcoin",
+      "symbol": "wBTC",
+      "token": "0x84DBF071d638eFf524D336758F099032e7a43Dc3",
+      "faucet": "0x2AB0196efC2CCe9A776d111EFc709E1AcE73C10d"
+    },
+    {
+      "id": "sDAI",
+      "name": "Savings DAI",
+      "symbol": "sDAI",
+      "token": "0xeeeD5Be60163622c3c7cacC84dBA0d8Def7ec9c1",
+      "faucet": "0xcBaB2f4341C455B8c7915376585978c58fb562bD"
+    }
+  ],
+  "pools": [
+    {
+      "id": 0,
+      "name": "ETH / fhUSDC",
+      "symbol": "vLP-ETHUSDC",
+      "token0Id": "fhETH",
+      "token1Id": "fhUSDC",
+      "pool": "0xd832249432F04166017c2A9FDbD55B6839ed781b",
+      "seed0": "1000",
+      "seed1": "1200",
+      "collateralPriceE4": "250000"
+    },
+    {
+      "id": 1,
+      "name": "wBTC / fhETH",
+      "symbol": "vLP-WBTCFHETH",
+      "token0Id": "wBTC",
+      "token1Id": "fhETH",
+      "pool": "0x8478f07C5Fc86329a66b612ffbb7b73C5b1bAcEB",
+      "seed0": "800",
+      "seed1": "900",
+      "collateralPriceE4": null
+    },
+    {
+      "id": 2,
+      "name": "sDAI / fhUSDC",
+      "symbol": "vLP-SDAIUSDC",
+      "token0Id": "sDAI",
+      "token1Id": "fhUSDC",
+      "pool": "0x6eDD2363fD5a4822b269E21B88D5AAF3d8ff1D87",
+      "seed0": "1100",
+      "seed1": "1100",
+      "collateralPriceE4": "120000"
+    }
+  ],
+  "frontendEnv": [
+    "NEXT_PUBLIC_APP_MODE=live",
+    "NEXT_PUBLIC_FHENIX_ENV=TESTNET",
+    "NEXT_PUBLIC_RPC_URL=https://ethereum-sepolia.publicnode.com",
+    "NEXT_PUBLIC_CHAIN_ID=11155111",
+    "NEXT_PUBLIC_CHAIN_NAME=Ethereum Sepolia",
+    "NEXT_PUBLIC_EXPLORER_URL=https://sepolia.etherscan.io",
+    "NEXT_PUBLIC_COFHE_URL=https://testnet-cofhe.fhenix.zone",
+    "NEXT_PUBLIC_ZK_VERIFIER_URL=https://testnet-cofhe-vrf.fhenix.zone",
+    "NEXT_PUBLIC_THRESHOLD_URL=https://testnet-cofhe-tn.fhenix.zone",
+    "NEXT_PUBLIC_GAUGE_CONTROLLER_ADDRESS=0x7B67fBbB1549f3b2CcEa0bE8E44c8cDEEEa689c3",
+    "NEXT_PUBLIC_VEIL_TOKEN_ADDRESS=0x4709e09bEADDA02461cDAa4A9Dd8274F410B2e4d",
+    "NEXT_PUBLIC_VEIL_FAUCET_ADDRESS=0x4C8BaF36691894a1997D77Dfa021d63129448BC0",
+    "NEXT_PUBLIC_POOL_0_NAME=ETH / fhUSDC",
+    "NEXT_PUBLIC_POOL_0_ADDRESS=0xd832249432F04166017c2A9FDbD55B6839ed781b",
+    "NEXT_PUBLIC_POOL_1_NAME=wBTC / fhETH",
+    "NEXT_PUBLIC_POOL_1_ADDRESS=0x8478f07C5Fc86329a66b612ffbb7b73C5b1bAcEB",
+    "NEXT_PUBLIC_POOL_2_NAME=sDAI / fhUSDC",
+    "NEXT_PUBLIC_POOL_2_ADDRESS=0x6eDD2363fD5a4822b269E21B88D5AAF3d8ff1D87",
+    "NEXT_PUBLIC_ASSET_0_NAME=fhETH",
+    "NEXT_PUBLIC_ASSET_0_ADDRESS=0x6170D934cB23bC59E9781AE50abaca937f45dD72",
+    "NEXT_PUBLIC_ASSET_1_NAME=fhUSDC",
+    "NEXT_PUBLIC_ASSET_1_ADDRESS=0xe4213f5A974fd546d6e20F971B0a44eC01Af44f2",
+    "NEXT_PUBLIC_ASSET_2_NAME=wBTC",
+    "NEXT_PUBLIC_ASSET_2_ADDRESS=0x84DBF071d638eFf524D336758F099032e7a43Dc3",
+    "NEXT_PUBLIC_ASSET_3_NAME=sDAI",
+    "NEXT_PUBLIC_ASSET_3_ADDRESS=0xeeeD5Be60163622c3c7cacC84dBA0d8Def7ec9c1"
+  ]
+}

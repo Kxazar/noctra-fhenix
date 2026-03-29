@@ -1,8 +1,8 @@
 export const brand = {
-  protocol: 'Noctra Arc',
+  protocol: 'Noctra',
   short: 'Noctra',
   descriptor: 'Encrypted liquidity operating system',
-  governanceTokenName: 'Noctra Arc Token',
+  governanceTokenName: 'Noctra Token',
   governanceTokenSymbol: 'NTRA',
   veGovernanceTokenSymbol: 'veNTRA',
 } as const

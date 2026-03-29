@@ -103,7 +103,7 @@ async function main() {
   const outputDir = path.join(process.cwd(), 'deployments')
   mkdirSync(outputDir, { recursive: true })
 
-  const outputPath = path.join(outputDir, `noctra-arc-${networkName}.json`)
+  const outputPath = path.join(outputDir, `noctra-${networkName}.json`)
   writeFileSync(
     outputPath,
     JSON.stringify(
@@ -116,7 +116,7 @@ async function main() {
     ),
   )
 
-  console.log(`Noctra Arc stack deployed on ${networkName}`)
+  console.log(`Noctra stack deployed on ${networkName}`)
   console.log(`Deployment manifest: ${outputPath}`)
   console.log('')
   console.log(envLines.join('\n'))

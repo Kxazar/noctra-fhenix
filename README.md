@@ -1,14 +1,8 @@
 # Noctra
 
-Noctra is a Fhenix-native DeFi demo that combines:
+Noctra is a live Fhenix CoFHE DeFi demo that pushes encrypted state beyond toy voting examples and into a ve-style liquidity coordination flow.
 
-- `veNTRA` time-decaying governance
-- encrypted shadow gauge voting
-- live swap and LP rails
-- a public `NTRA` faucet
-- wrapped confidential balances powered by Fhenix CoFHE
-
-Live site:
+Live app:
 
 - [noctra-fhenix.vercel.app](https://noctra-fhenix.vercel.app)
 
@@ -16,38 +10,48 @@ Repository:
 
 - [Kxazar/noctra-fhenix](https://github.com/Kxazar/noctra-fhenix)
 
-As of March 29, 2026, the public deployment is live on `Ethereum Sepolia` and the core user flow has been verified on-chain from a real wallet:
+As of March 29, 2026, Noctra is deployed on `Ethereum Sepolia` and the core wallet flow has been exercised on-chain from a real wallet.
 
-- faucet claim
-- ve lock
-- lock increase
-- lock extension
-- NTRA wrap
-- encrypted gauge vote
-- swap
-- add liquidity
+## What Noctra Demonstrates
 
-## Why This Exists
+Noctra combines a few ideas in one surface:
 
-Most FHE demos stop at a private counter or a hidden vote. Noctra pushes Fhenix closer to a real DeFi coordination surface:
+- a public `NTRA` faucet for protocol bootstrapping
+- `veNTRA` time-decaying governance locks
+- encrypted shadow gauge voting
+- public swap and LP rails
+- live epoch-oriented emissions routing
+- optional confidential balance flows powered by Fhenix CoFHE
 
-- liquidity is visible
-- gauges are visible
-- emissions are visible
-- but voter intent stays private until the epoch reveal
+The main point is simple:
 
-That makes it a useful showcase for the part of DeFi where information asymmetry matters most: emission routing, position signaling, and hidden preference discovery.
+- market structure stays public
+- liquidity stays public
+- emissions stay public
+- voter intent stays hidden until reveal
 
-## What We Built
+That makes Noctra a more realistic FHE showcase for DeFi coordination, where hidden preference and emission routing matter more than private counters.
 
-### Protocol Surface
+## Why We Built It This Way
 
-The public app is split into two top-level views:
+Most privacy demos stop at a sealed ballot or a hidden balance. We wanted to show that Fhenix can also support coordination primitives that feel closer to Curve and Aerodrome style tokenomics:
+
+- users claim a governance token
+- users lock it into a decaying ve-position
+- users direct weekly emissions through encrypted votes
+- pools remain fully visible and usable
+- the market sees the outcome, but not the intent during the epoch
+
+That is the core Noctra thesis: visible liquidity, hidden governance intent.
+
+## Product Surface
+
+The app is organized into two top-level views:
 
 - `Protocol`
 - `About`
 
-Inside `Protocol`, the live interface is organized into:
+The `Protocol` view exposes the live user actions:
 
 - `Faucet`
 - `Swap`
@@ -55,63 +59,76 @@ Inside `Protocol`, the live interface is organized into:
 - `veNTRA`
 - `Shadow Gauges`
 
-### Core Contracts
+The `About` view explains the protocol model and how Fhenix is used under the hood.
 
-#### `ConfidentialGaugeController`
+## Protocol Loop
 
-This is the heart of the protocol.
+Noctra follows one compact cycle:
 
-- Users lock `NTRA`
-- Voting power decays linearly over time
-- Votes are submitted as encrypted `InEuint8`
-- Gauge tallies update through encrypted branching
-- The winning distribution remains hidden until reveal
+1. claim `NTRA`
+2. lock into `veNTRA`
+3. optionally wrap part of the balance into confidential storage
+4. submit an encrypted vote for a gauge
+5. trade into active markets or provide LP
+6. settle emissions after the epoch reveal path becomes available
 
-#### `VeilToken`
+This lets us demonstrate both sides of the system at once:
 
-This is the governance asset behind Noctra.
+- public DeFi state and execution
+- encrypted governance intent and selective reveal
 
-- Public ERC-20 balances support locking, swapping, and LP flows
-- Encrypted balances support shielded holdings
-- `wrap(...)` moves public balances into confidential storage
+## Core Contracts
 
-#### `VeilFaucet`
+### `ConfidentialGaugeController`
 
-This bootstraps wallets with governance inventory.
+This is the core coordination contract.
+
+- accepts encrypted votes as `InEuint8`
+- tracks ve-style voting power
+- updates encrypted gauge tallies
+- supports epoch reveal and settlement flows
+- routes emissions to pools after the epoch
+
+### `VeilToken`
+
+This is the governance token contract behind `NTRA`.
+
+- standard ERC-20 balances are used for faucet claims, swaps, LP, and locking
+- encrypted balances support confidential wrapped holdings
+- `wrap(...)` moves public balances into an FHE-protected accounting path
+
+### `VeilFaucet`
+
+This bootstraps governance inventory for testing.
 
 - `100 NTRA` per claim
-- `1` request every `24 hours`
-- Enforced on-chain, not only in the UI
+- one claim every `24 hours`
+- enforced on-chain
 
-#### `VeilLiquidityPool`
+### `VeilLiquidityPool`
 
-This is the simplified AMM layer used for the live demo.
+This is the simplified AMM layer used by the live demo.
 
 - constant-product swaps
 - LP minting
 - on-chain reserves
-- gauge rewards can be routed into pool recipients at epoch settlement
+- gauge settlement hooks for emission routing
 
-#### `PrivateVoting`
+### `PrivateVoting`
 
-The original minimal voting primitive is still included as a smaller CoFHE example.
+The original minimal voting primitive is still included as a smaller reference example.
 
-#### Experimental Stable Rail
+### Additional Confidential Modules
 
-The repository still contains an experimental confidential stable module:
+The repository also keeps extra confidential experiments that are useful as R&D reference material, even though the public UI is intentionally focused on `NTRA`, `veNTRA`, swaps, LP, and shadow gauges.
 
-- `ConfidentialStableController`
-- `VeilStablecoin`
+## How Noctra Uses Fhenix
 
-It is intentionally not the focus of the current public UI, which is centered on `NTRA`, `veNTRA`, swaps, LP, and shadow gauges.
+Noctra is not just visually themed around privacy. The protocol and frontend directly use the Fhenix stack.
 
-## Fhenix Functionality Used
+### FHE Library Inside Contracts
 
-Noctra is not only “inspired by” Fhenix. It actively uses the stack in several places.
-
-### FHE Library
-
-The contracts use the Fhenix FHE library primitives directly, including:
+The contracts use Fhenix FHE primitives directly, including:
 
 - `FHE.asEuint8(...)`
 - `FHE.asEuint128(...)`
@@ -126,52 +143,41 @@ The contracts use the Fhenix FHE library primitives directly, including:
 - `FHE.allowSender(...)`
 - `FHE.allowGlobal(...)`
 
-These functions are what make hidden vote routing work inside `ConfidentialGaugeController`.
+Those primitives are what let the gauge controller branch on encrypted inputs, aggregate hidden votes, and manage reveal permissions without collapsing everything back into public state.
 
-### CoFHE SDK
+### Fhenix SDK and Wallet Flow
 
-The frontend and verification scripts use the Fhenix SDK flow:
+The frontend and verification scripts use the Fhenix SDK flow, including:
 
 - `cofhejs.initializeWithViem(...)`
 - `cofhejs.initializeWithEthers(...)`
 - `cofhejs.createPermit(...)`
 - `cofhejs.encrypt(...)`
 - `cofhejs.decrypt(...)`
-- `cofhejs.unseal(...)`
 - `Encryptable.uint8(...)`
 - `Encryptable.uint128(...)`
 
-This is how wallets create encrypted inputs for votes and decrypt outputs they are permitted to see.
+In practice that means:
 
-### Permit-Based Reveal Model
+- the wallet encrypts vote intent before submission
+- the app requests permits for values that are allowed to be revealed
+- decrypt happens only through the proper permission path
 
-The UI uses the Fhenix permission model instead of pretending private values are globally readable.
+### Confidential UX Model
 
-- voters can submit encrypted intent
-- contracts can selectively allow visibility
-- holders can decrypt values through permits
-- epoch aggregates can be revealed later without exposing voter choice during the epoch
+Noctra deliberately keeps the privacy model understandable:
 
-## Architecture Summary
+- pool reserves are public
+- LP balances are public
+- emission budgets are public
+- the chosen gauge remains hidden during the epoch
+- only permitted decrypt paths can surface protected values
 
-Noctra follows one compact loop:
-
-1. claim `NTRA`
-2. lock into `veNTRA`
-3. optionally wrap into a confidential balance
-4. route weekly emissions through encrypted shadow gauge voting
-5. swap into pools or provide LP
-6. settle emissions after the epoch reveal
-
-The key design point is simple:
-
-- pool state is public
-- emissions are public
-- but vote direction is private until reveal
+This is the real reason Fhenix matters here: privacy becomes a coordination tool, not only a storage gimmick.
 
 ## Live Deployment
 
-Current chain:
+Current live network:
 
 - `Ethereum Sepolia`
 
@@ -188,20 +194,22 @@ Live contract addresses:
 - `wBTC / fhETH`: `0x8478f07C5Fc86329a66b612ffbb7b73C5b1bAcEB`
 - `sDAI / fhUSDC`: `0x6eDD2363fD5a4822b269E21B88D5AAF3d8ff1D87`
 
-## On-Chain Verification
+The live frontend is configured for Sepolia and the UI now explicitly guards actions so users do not accidentally try to transact on the wrong chain.
+
+## What We Verified On-Chain
 
 The live verification script is:
 
 - `scripts/verifySepoliaLiveFlow.ts`
 
-It currently checks:
+The verified Sepolia flow covers:
 
-- faucet claims
-- lock flow
-- wrap flow
-- encrypted vote submission
+- faucet claim path
+- ve lock detection and management flow
+- `wrap(...)` submission
+- encrypted gauge vote path
 - swap execution
-- LP deposit flow
+- LP provision flow
 
 Run it with:
 
@@ -209,15 +217,34 @@ Run it with:
 PRIVATE_KEY=... node_modules/.bin/hardhat run scripts/verifySepoliaLiveFlow.ts --network eth-sepolia
 ```
 
-There is also a mock-environment end-to-end verification flow:
+There is also a local mock end-to-end flow:
 
 ```bash
 WALLET_PRIVATE_KEY=... corepack pnpm demo:wallet-check
 ```
 
+## Current Status
+
+What is working today:
+
+- live frontend deployment
+- live Sepolia contracts
+- wallet connect flow in the UI
+- Sepolia network enforcement in protocol actions
+- encrypted vote submission path
+- swaps and LP adds on live deployment
+- ve lock flow on live deployment
+
+Known caveat:
+
+- wrapped `NTRA` decrypt on live Sepolia still has an integration edge case in the reveal path
+- the `wrap(...)` transaction itself succeeds, but the holder-side decrypt result is not yet consistently becoming ready on the live testnet path
+
+That issue is isolated to the wrapped-balance reveal flow. The rest of the live protocol surface is working and has been exercised.
+
 ## Local Development
 
-### Install
+Install:
 
 ```bash
 corepack pnpm install
@@ -225,13 +252,13 @@ cd frontend
 corepack pnpm install
 ```
 
-### Compile
+Compile:
 
 ```bash
 corepack pnpm compile
 ```
 
-### Tests
+Tests:
 
 ```bash
 corepack pnpm test
@@ -240,7 +267,7 @@ corepack pnpm test:faucet
 corepack pnpm test:pools
 ```
 
-### Frontend
+Frontend:
 
 ```bash
 cd frontend
@@ -257,7 +284,7 @@ corepack pnpm eth-sepolia:deploy-noctra
 corepack pnpm arb-sepolia:deploy-noctra
 ```
 
-Legacy `veilflow` deploy aliases are still kept in `package.json` for compatibility.
+Legacy `veilflow` aliases remain in `package.json` only for compatibility with earlier iterations of the project.
 
 ## Important Files
 
@@ -265,18 +292,16 @@ Legacy `veilflow` deploy aliases are still kept in `package.json` for compatibil
 - `contracts/VeilToken.sol`
 - `contracts/VeilFaucet.sol`
 - `contracts/VeilLiquidityPool.sol`
-- `contracts/PrivateVoting.sol`
 - `scripts/deployVeilFlowStack.ts`
 - `scripts/verifySepoliaLiveFlow.ts`
 - `frontend/components/LandingShell.tsx`
 - `frontend/components/GaugeBoard.tsx`
 - `frontend/components/LockPlanner.tsx`
+- `frontend/components/WalletControls.tsx`
 - `frontend/hooks/useCofhe.ts`
 
-## Current Status
+## Summary
 
-- live frontend deployed
-- live Sepolia contracts deployed
-- core wallet flow verified on-chain
-- shadow gauge vote flow confirmed to stay private before reveal
-- public UI focused on `NTRA`, `veNTRA`, swap, LP, and shadow gauges
+Noctra is a practical Fhenix showcase for encrypted coordination in DeFi.
+
+It demonstrates that with CoFHE and the Fhenix SDK, we can keep liquidity and market structure visible while keeping the most gameable governance signal private until the protocol is ready to reveal it.

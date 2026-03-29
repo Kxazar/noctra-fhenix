@@ -2,7 +2,7 @@
   "name": "noctra-frontend",
   "private": true,
   "version": "0.1.0",
-  "description": "Noctra frontend for the Fhenix CoFHE DeFi demo",
+  "description": "Noctra frontend for the live Fhenix CoFHE DeFi demo on Ethereum Sepolia",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

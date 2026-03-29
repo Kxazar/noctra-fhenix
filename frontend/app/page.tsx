@@ -1,6 +1,5 @@
 import { LogoMark } from '@/components/LogoMark'
-import { ProtocolTabs } from '@/components/ProtocolTabs'
-import { ArchitecturePanel } from '@/components/ArchitecturePanel'
+import { WorkspaceTabs } from '@/components/WorkspaceTabs'
 import { brand } from '@/lib/brand'
 import { demoEpoch, demoPools } from '@/lib/demo-data'
 
@@ -98,11 +97,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <ArchitecturePanel />
-
       <section className="content-grid">
         <div className="stack">
-          <ProtocolTabs />
+          <WorkspaceTabs />
         </div>
       </section>
     </main>

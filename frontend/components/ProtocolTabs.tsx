@@ -19,20 +19,11 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]['id']
 
-const visibilityRows = [
-  { label: 'Public to everyone', value: 'pool reserves, LP balances, emission budget, and active market inventory' },
-  { label: 'Hidden until reveal', value: 'which gauge a voter selected and the per-gauge totals during the epoch' },
-  {
-    label: 'Only the holder can reveal',
-    value: `wrapped ${brand.governanceTokenSymbol} balances and decrypted outputs tied to the holder permit`,
-  },
-]
-
 export function ProtocolTabs() {
   const [activeTab, setActiveTab] = useState<TabId>('faucet')
 
   return (
-    <section className="panel protocol-shell" id="protocol-workspace">
+    <section className="panel protocol-shell">
       <div className="panel-header protocol-header">
         <div>
           <p className="eyebrow">{brand.protocol} control surface</p>
@@ -60,17 +51,6 @@ export function ProtocolTabs() {
       </div>
 
       <div className="tab-panel" role="tabpanel">
-        <div className="overview-stack">
-          <div className="visibility-table">
-            {visibilityRows.map((row) => (
-              <article className="visibility-row" key={row.label}>
-                <strong>{row.label}</strong>
-                <p>{row.value}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-
         {activeTab === 'faucet' ? <FaucetPanel /> : null}
         {activeTab === 'swap' ? <SwapPanel /> : null}
         {activeTab === 'lp' ? <LiquidityPanel /> : null}

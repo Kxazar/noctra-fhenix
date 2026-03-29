@@ -55,7 +55,8 @@ A minimal CPMM rail where:
 
 A Next.js app called `Noctra Arc` that includes:
 
-- a compact architecture overview at the top of the page
+- a top-level `Protocol / About` switch between execution rails and architecture notes
+- a compact architecture overview inside the `About` tab
 - a dedicated NTRA faucet tab
 - a dedicated swap tab
 - a dedicated LP tab

@@ -58,75 +58,79 @@ export function LandingShell() {
         </div>
       </section>
 
-      <section className="brand-bar">
-        <div className="brand-lockup">
-          <LogoMark className="brand-logo" />
-          <div className="brand-meta">
-            <p className="eyebrow">{brand.descriptor}</p>
-            <h2 className="brand-title">{brand.protocol}</h2>
-          </div>
-        </div>
-        <div className="brand-links">
-          <span className="brand-pill">ve-style emissions</span>
-          <span className="brand-pill">shadow gauges</span>
-          <span className="brand-pill">swap + LP rails</span>
-        </div>
-      </section>
+      {activeTab === 'protocol' ? (
+        <>
+          <section className="brand-bar">
+            <div className="brand-lockup">
+              <LogoMark className="brand-logo" />
+              <div className="brand-meta">
+                <p className="eyebrow">{brand.descriptor}</p>
+                <h2 className="brand-title">{brand.protocol}</h2>
+              </div>
+            </div>
+            <div className="brand-links">
+              <span className="brand-pill">ve-style emissions</span>
+              <span className="brand-pill">shadow gauges</span>
+              <span className="brand-pill">swap + LP rails</span>
+            </div>
+          </section>
 
-      <section className="hero">
-        <div className="hero-copy">
-          <div className="hero-frame">
-            <p className="eyebrow">{brand.short}</p>
-            <h1>Shadow liquidity, loud market presence.</h1>
-            <p className="hero-text">
-              {brand.protocol} is a Fhenix-native coordination surface for encrypted gauge voting, live swaps, and LP
-              formation. It brings Curve and Aerodrome style emissions into a sharper interface built around hidden
-              intent and visible market action.
-            </p>
+          <section className="hero">
+            <div className="hero-copy">
+              <div className="hero-frame">
+                <p className="eyebrow">{brand.short}</p>
+                <h1>Shadow liquidity, loud market presence.</h1>
+                <p className="hero-text">
+                  {brand.protocol} is a Fhenix-native coordination surface for encrypted gauge voting, live swaps, and
+                  LP formation. It brings Curve and Aerodrome style emissions into a sharper interface built around
+                  hidden intent and visible market action.
+                </p>
 
-            <div className="hero-actions">
-              <a className="hero-action" href="#protocol-workspace">
-                Enter control surface
-              </a>
-              <p className="hero-note">
-                {brand.governanceTokenSymbol} governs emissions, {brand.veGovernanceTokenSymbol} decays over time, and
-                gauge intent stays hidden until epoch reveal.
-              </p>
+                <div className="hero-actions">
+                  <a className="hero-action" href="#protocol-workspace">
+                    Enter control surface
+                  </a>
+                  <p className="hero-note">
+                    {brand.governanceTokenSymbol} governs emissions, {brand.veGovernanceTokenSymbol} decays over time,
+                    and gauge intent stays hidden until epoch reveal.
+                  </p>
+                </div>
+
+                <div className="hero-tags">
+                  {heroTags.map((tag) => (
+                    <span className="hero-tag" key={tag}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="hero-tags">
-              {heroTags.map((tag) => (
-                <span className="hero-tag" key={tag}>
-                  {tag}
-                </span>
+            <div className="hero-stats">
+              <article className="spotlight-card">
+                <div className="spotlight-header">
+                  <span className="eyebrow">Market signal</span>
+                  <span className="brand-badge">Built on Fhenix CoFHE</span>
+                </div>
+                <div className="spotlight-values">
+                  <strong>{brand.protocol}</strong>
+                  <p>
+                    A confidential liquidity stack with live pool mechanics, ve-style routing, and epoch settlement in
+                    a single surface.
+                  </p>
+                </div>
+              </article>
+
+              {heroStats.map((stat) => (
+                <article className="stat-card" key={stat.label}>
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </article>
               ))}
             </div>
-          </div>
-        </div>
-
-        <div className="hero-stats">
-          <article className="spotlight-card">
-            <div className="spotlight-header">
-              <span className="eyebrow">Market signal</span>
-              <span className="brand-badge">Built on Fhenix CoFHE</span>
-            </div>
-            <div className="spotlight-values">
-              <strong>{brand.protocol}</strong>
-              <p>
-                A confidential liquidity stack with live pool mechanics, ve-style routing, and epoch settlement in a
-                single surface.
-              </p>
-            </div>
-          </article>
-
-          {heroStats.map((stat) => (
-            <article className="stat-card" key={stat.label}>
-              <span>{stat.label}</span>
-              <strong>{stat.value}</strong>
-            </article>
-          ))}
-        </div>
-      </section>
+          </section>
+        </>
+      ) : null}
 
       <section className="content-grid">
         <div className="stack">

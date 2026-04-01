@@ -1,8 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useAccount, useChainId, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, usePublicClient, useWriteContract } from 'wagmi'
 
+import { useCofhe } from '@/hooks/useCofhe'
 import { brand } from '@/lib/brand'
 import { contracts, isLiveConfigured, gaugeControllerAbi, veilTokenAbi } from '@/lib/contracts'
 import { appChain } from '@/lib/wagmiConfig'
@@ -14,13 +15,16 @@ function describeError(error: { shortMessage?: string; message?: string } | null
 }
 
 export function LockPlanner() {
+  const publicClient = usePublicClient()
   const { address } = useAccount()
   const chainId = useChainId()
   const { writeContractAsync, isPending } = useWriteContract()
+  const { createPermit, decryptHandle, permitHash, sdkModule } = useCofhe()
 
   const [lockAmount, setLockAmount] = useState(1000)
   const [durationDays, setDurationDays] = useState(1460)
   const [wrapAmount, setWrapAmount] = useState(120)
+  const [revealedWrappedBalance, setRevealedWrappedBalance] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
 
   const votingPower = useMemo(
@@ -33,6 +37,78 @@ export function LockPlanner() {
     [durationDays],
   )
   const wrongNetwork = Boolean(address) && chainId !== appChain.id
+
+  const handleRevealWrappedBalance = async () => {
+    if (wrongNetwork) {
+      setStatus(`Switch your wallet to ${appChain.name} before revealing wrapped ${brand.governanceTokenSymbol}.`)
+      return
+    }
+
+    if (!publicClient || !address || !isLiveConfigured) {
+      setStatus(`Wrapped-balance reveal needs the live ${brand.governanceTokenSymbol} deployment.`)
+      return
+    }
+
+    if (!permitHash) {
+      const permitResult = await createPermit()
+      if (!permitResult.ok) {
+        setStatus(permitResult.error)
+        return
+      }
+    }
+
+    try {
+      setStatus('Reading the encrypted balance handle...')
+      const handle = await publicClient.readContract({
+        address: contracts.voteToken,
+        abi: veilTokenAbi,
+        functionName: 'encBalances',
+        args: [address],
+      })
+
+      const directReveal = await decryptHandle(handle, sdkModule?.FheTypes.Uint128 ?? 6, address, {
+        attempts: 4,
+        delayMs: 5000,
+      })
+
+      if (directReveal.ok) {
+        setRevealedWrappedBalance(directReveal.data.toString())
+        setStatus('Wrapped balance revealed through the active Fhenix permit.')
+        return
+      }
+
+      setStatus('Permit-based reveal is still pending. Requesting an on-chain decrypt task...')
+      const decryptHash = await writeContractAsync({
+        address: contracts.voteToken,
+        abi: veilTokenAbi,
+        functionName: 'decryptBalance',
+        args: [address],
+      })
+
+      await publicClient.waitForTransactionReceipt({ hash: decryptHash })
+
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const [result, ready] = await publicClient.readContract({
+          address: contracts.voteToken,
+          abi: veilTokenAbi,
+          functionName: 'getDecryptBalanceResultSafe',
+          args: [address],
+        })
+
+        if (ready) {
+          setRevealedWrappedBalance(result.toString())
+          setStatus('Wrapped balance revealed through the contract-side decrypt path.')
+          return
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+      }
+
+      setStatus('Decrypt task is still pending on Sepolia. Wait a little and try again.')
+    } catch (error) {
+      setStatus(describeError(error as { shortMessage?: string; message?: string }))
+    }
+  }
 
   const handleLock = async () => {
     if (wrongNetwork) {
@@ -82,15 +158,21 @@ export function LockPlanner() {
 
     try {
       setStatus(`Wrapping ${brand.governanceTokenSymbol} into encrypted balance...`)
+      setRevealedWrappedBalance(null)
 
-      await writeContractAsync({
+      const hash = await writeContractAsync({
         address: contracts.voteToken,
         abi: veilTokenAbi,
         functionName: 'wrap',
         args: [address, BigInt(wrapAmount)],
       })
 
-      setStatus(`Wrapped balance submitted. Your public ${brand.governanceTokenSymbol} moved into encrypted storage.`)
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash })
+      }
+
+      setStatus(`Wrap confirmed. Your public ${brand.governanceTokenSymbol} moved into encrypted storage.`)
+      await handleRevealWrappedBalance()
     } catch (error) {
       setStatus(describeError(error as { shortMessage?: string; message?: string }))
     }
@@ -156,8 +238,8 @@ export function LockPlanner() {
           <strong>{veShare}% of max boost</strong>
         </div>
         <div>
-          <span className="muted">Wrapped side-pocket</span>
-          <strong>{wrapAmount} shielded {brand.governanceTokenSymbol}</strong>
+          <span className="muted">Wrapped balance</span>
+          <strong>{revealedWrappedBalance ? `${revealedWrappedBalance} shielded ${brand.governanceTokenSymbol}` : 'hidden until reveal'}</strong>
         </div>
       </div>
 
@@ -167,6 +249,9 @@ export function LockPlanner() {
         </button>
         <button className="button button-secondary" disabled={wrongNetwork || isPending} onClick={() => void handleWrap()}>
           Encrypt {brand.governanceTokenSymbol} balance
+        </button>
+        <button className="button button-secondary" disabled={wrongNetwork || isPending} onClick={() => void handleRevealWrappedBalance()}>
+          Reveal wrapped balance
         </button>
       </div>
 

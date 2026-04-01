@@ -236,6 +236,23 @@ export const veilTokenAbi = [
   {
     type: 'function',
     stateMutability: 'nonpayable',
+    name: 'decryptBalance',
+    inputs: [{ name: 'user', type: 'address' }],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    stateMutability: 'view',
+    name: 'getDecryptBalanceResultSafe',
+    inputs: [{ name: 'user', type: 'address' }],
+    outputs: [
+      { name: '', type: 'uint128' },
+      { name: '', type: 'bool' },
+    ],
+  },
+  {
+    type: 'function',
+    stateMutability: 'nonpayable',
     name: 'wrap',
     inputs: [
       { name: 'user', type: 'address' },

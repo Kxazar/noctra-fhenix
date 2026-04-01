@@ -24,8 +24,27 @@ type HookSuccess<T> = {
   data: T
 }
 
+type DecryptOptions = {
+  attempts?: number
+  delayMs?: number
+}
+
 function describeError(error: { shortMessage?: string; message?: string } | null | undefined) {
   return error?.shortMessage ?? error?.message ?? 'Unknown CoFHE error'
+}
+
+function isRetryableDecryptError(message: string) {
+  const normalized = message.toLowerCase()
+  return (
+    normalized.includes('sealed data not found') ||
+    normalized.includes('decrypted data not found') ||
+    normalized.includes('unexpected encryption type') ||
+    normalized.includes('returned null')
+  )
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export function useCofhe() {
@@ -202,6 +221,7 @@ export function useCofhe() {
     ctHash: bigint,
     utype: number,
     accountOverride?: string,
+    options?: DecryptOptions,
   ): Promise<HookSuccess<bigint> | HookFailure> => {
     if (!sdkModule) {
       const message = 'CoFHE SDK is still loading.'
@@ -216,20 +236,49 @@ export function useCofhe() {
       return { ok: false as const, error: message }
     }
 
-    const result = await sdkModule.cofhejs.decrypt(
-      ctHash,
-      utype as never,
-      accountOverride ?? address,
-      permit.data.getHash(),
-    )
+    const attempts = Math.max(1, options?.attempts ?? 1)
+    const delayMs = Math.max(0, options?.delayMs ?? 0)
+    const account = accountOverride ?? address
+    let lastMessage = 'Decrypt failed'
 
-    if (!result.success) {
-      const message = describeError(result.error)
-      setError(message)
-      return { ok: false as const, error: message }
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      const unsealResult = await sdkModule.cofhejs.unseal(
+        ctHash,
+        utype as never,
+        account,
+        permit.data.getHash(),
+      )
+
+      if (unsealResult.success) {
+        return { ok: true as const, data: unsealResult.data as bigint }
+      }
+
+      const decryptResult = await sdkModule.cofhejs.decrypt(
+        ctHash,
+        utype as never,
+        account,
+        permit.data.getHash(),
+      )
+
+      if (decryptResult.success) {
+        return { ok: true as const, data: decryptResult.data as bigint }
+      }
+
+      const unsealMessage = describeError(unsealResult.error)
+      const decryptMessage = describeError(decryptResult.error)
+      lastMessage =
+        decryptMessage === unsealMessage ? decryptMessage : `${unsealMessage}; fallback decrypt: ${decryptMessage}`
+
+      if (attempt < attempts - 1 && isRetryableDecryptError(lastMessage)) {
+        await sleep(delayMs)
+        continue
+      }
+
+      break
     }
 
-    return { ok: true as const, data: result.data as bigint }
+    setError(lastMessage)
+    return { ok: false as const, error: lastMessage }
   }
 
   return {

@@ -76,8 +76,8 @@ async function sleep(ms: number) {
 async function waitForBalanceDecrypt(
   voteToken: Awaited<ReturnType<typeof hre.ethers.getContractAt>>,
   account: string,
-  retries = 15,
-  delayMs = 2000,
+  retries = 12,
+  delayMs = 5000,
 ) {
   for (let attempt = 0; attempt < retries; attempt++) {
     const [amount, decrypted] = await voteToken.getDecryptBalanceResultSafe(account)
@@ -85,6 +85,36 @@ async function waitForBalanceDecrypt(
       return amount
     }
     await sleep(delayMs)
+  }
+
+  return null
+}
+
+async function tryPermitReveal(
+  handle: bigint,
+  walletAddress: string,
+  permitHash: string | undefined,
+  retries = 4,
+  delayMs = 5000,
+) {
+  if (!permitHash) {
+    return null
+  }
+
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const unsealResult = await cofhejs.unseal(handle, FheTypes.Uint128, walletAddress, permitHash)
+    if (unsealResult.success) {
+      return { method: 'unseal' as const, value: unsealResult.data }
+    }
+
+    const decryptResult = await cofhejs.decrypt(handle, FheTypes.Uint128, walletAddress, permitHash)
+    if (decryptResult.success) {
+      return { method: 'decrypt' as const, value: decryptResult.data }
+    }
+
+    if (attempt < retries - 1) {
+      await sleep(delayMs)
+    }
   }
 
   return null
@@ -200,16 +230,12 @@ async function main() {
   }
 
   const encryptedWrappedBalance = await voteToken.encBalances(walletAddress)
-  const wrappedBalance = permitHash
-    ? await cofhejs.decrypt(encryptedWrappedBalance, FheTypes.Uint128, walletAddress, permitHash)
-    : null
+  const wrappedBalance = await tryPermitReveal(encryptedWrappedBalance, walletAddress, permitHash, 4, 5000)
 
-  if (wrappedBalance?.success) {
-    console.log(`Wrapped NTRA decrypted for holder: ${wrappedBalance.data.toString()}`)
+  if (wrappedBalance) {
+    console.log(`Wrapped NTRA decrypted for holder via ${wrappedBalance.method}: ${wrappedBalance.value.toString()}`)
   } else {
-    console.log(
-      `Permit decrypt for wrapped NTRA was unavailable${wrappedBalance ? `: ${wrappedBalance.error.message}` : ''}. Falling back to contract-side decrypt.`,
-    )
+    console.log('Permit-based wrapped NTRA reveal stayed unavailable. Falling back to contract-side decrypt.')
 
     const decryptTx = await voteToken.decryptBalance(walletAddress)
     await decryptTx.wait()
@@ -233,12 +259,10 @@ async function main() {
   }
 
   const hiddenGaugeHandle = await gaugeController.getEncryptedGaugeWeight(epochId, 2)
-  const hiddenGaugeProbe = permitHash
-    ? await cofhejs.decrypt(hiddenGaugeHandle, FheTypes.Uint128, walletAddress, permitHash)
-    : null
-  console.log(`Pre-reveal gauge decrypt success: ${hiddenGaugeProbe?.success ?? false}`)
-  if (hiddenGaugeProbe && !hiddenGaugeProbe.success) {
-    console.log(`Pre-reveal gauge decrypt blocked as expected: ${hiddenGaugeProbe.error.message}`)
+  const hiddenGaugeProbe = await tryPermitReveal(hiddenGaugeHandle, walletAddress, permitHash, 1, 0)
+  console.log(`Pre-reveal gauge decrypt success: ${hiddenGaugeProbe !== null}`)
+  if (!hiddenGaugeProbe) {
+    console.log('Pre-reveal gauge decrypt stayed blocked as expected.')
   }
 
   const quotedSwapOut = await wBtcEthPool.poolContract.getAmountOut(await wBtc.tokenContract.getAddress(), 10n)
